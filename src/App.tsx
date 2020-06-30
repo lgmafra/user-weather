@@ -6,9 +6,6 @@ import {
   Text,
   StatusBar,
   TouchableOpacity,
-  FlatList,
-  Image,
-  ActivityIndicator,
 } from 'react-native';
 
 import './config/ReactotronConfig';
@@ -19,30 +16,9 @@ import Geocoder from 'react-native-geocoding';
 import api, {API_KEY} from './services/api';
 import {AxiosResponse} from 'axios';
 
-export interface IWeather {
-  id: Number;
-  main: string;
-  description: string;
-  icon: string;
-}
-
-export interface ICoords {
-  coords: {
-    latitude: Number;
-    longitude: Number;
-    altitudeAccuracy: Number;
-  };
-}
-
-export interface IWeatherData {
-  coords: ICoords;
-  weather: IWeather;
-  name: string;
-  main: {
-    temp: Number;
-    humidity: Number;
-  };
-}
+import {IWeather, IWeatherData, ICoords} from './interfaces';
+import WeatherCard from './components/WeatherCard';
+import {MAP_API_KEY, WEATHER_API_KEY} from './constants';
 
 const App = () => {
   const [error, setError] = useState<any>();
@@ -53,7 +29,7 @@ const App = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    Geocoder.init('AIzaSyBdhMldpIw54_eVYHzSAqFqnxDm2qubzSE');
+    Geocoder.init(MAP_API_KEY);
 
     Geolocation.getCurrentPosition(
       (info) => setCoords(info),
@@ -65,8 +41,9 @@ const App = () => {
 
   async function GetUserLocation() {
     setIsLoading(true);
+
     const response: AxiosResponse = await api.get(
-      `weather?lat=-14.795577&lon=-39.289474&appid=${API_KEY}&lang=pt_br&units=metric`,
+      `weather?lat=${coords?.coords.latitude}&lon=${coords?.coords.longitude}&appid=${WEATHER_API_KEY}&lang=pt_br&units=metric`,
     );
 
     if (response.status === 200) {
@@ -90,30 +67,6 @@ const App = () => {
     }
   }, [coords]);
 
-  function renderWeather(item: IWeather) {
-    console.log('item', item);
-    return (
-      <View style={styles.weatherCard}>
-        <Image
-          style={styles.weatherIcon}
-          resizeMode="contain"
-          source={{uri: `http://openweathermap.org/img/wn/10d@2x.png`}}
-        />
-
-        <View style={styles.weatherInfo}>
-          {/* <Text style={[styles.weatherDataCity]}>{weatherData?.name}</Text> */}
-          <Text style={[styles.weatherDataCity]}>{userAddress}</Text>
-          <Text style={styles.weatherData}>{item?.description}</Text>
-        </View>
-
-        <View style={styles.weatherTemp}>
-          <Text
-            style={styles.weatherDataTemp}>{`${weatherData?.main.temp}°`}</Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -127,16 +80,12 @@ const App = () => {
           </TouchableOpacity>
 
           <View>
-            {isLoading && (
-              <ActivityIndicator style={styles.loader} color="blue" />
-            )}
-            {!isLoading && (
-              <FlatList
-                keyExtractor={(_, index) => String(index)}
-                data={weather}
-                renderItem={({item}: {item: IWeather}) => renderWeather(item)}
-              />
-            )}
+            <WeatherCard
+              isLoading={isLoading}
+              weather={weather}
+              weatherData={weatherData}
+              userAddress={userAddress}
+            />
           </View>
         </View>
       </SafeAreaView>
@@ -151,15 +100,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     backgroundColor: '#ddd',
   },
-  weatherCard: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(87, 84, 83, 0.7)',
-    borderRadius: 4,
-    padding: 5,
-    justifyContent: 'space-evenly',
-  },
-  weatherIcon: {width: 70, height: 70, alignSelf: 'center'},
-  loader: {width: 24, height: 24, alignSelf: 'center'},
   refreshButton: {
     alignSelf: 'center',
     alignItems: 'center',
@@ -173,31 +113,6 @@ const styles = StyleSheet.create({
   refreshButtonText: {
     color: '#fff',
     fontSize: 20,
-  },
-  weatherInfo: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-evenly',
-    alignItems: 'flex-start',
-  },
-  weatherData: {
-    color: '#fff',
-    fontSize: 14,
-  },
-  weatherDataCity: {
-    color: '#fff',
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  weatherTemp: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    paddingRight: 20,
-  },
-  weatherDataTemp: {
-    color: '#fff',
-    fontSize: 24,
   },
 });
 
