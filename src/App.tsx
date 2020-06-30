@@ -24,7 +24,7 @@ import WeatherCard from './components/WeatherCard';
 import {MAP_API_KEY, WEATHER_API_KEY} from './constants';
 
 const App = () => {
-  const [error, setError] = useState<GeolocationError>();
+  const [error, setError] = useState<GeolocationError | string>();
   const [coords, setCoords] = useState<GeolocationResponse>();
   const [weather, setWeather] = useState<IWeather[]>();
   const [weatherData, setWeatherData] = useState<IWeatherData>();
@@ -39,31 +39,42 @@ const App = () => {
   }
 
   useEffect(() => {
-    Geocoder.init(MAP_API_KEY);
+    try {
+      Geocoder.init(MAP_API_KEY);
 
-    GetUserLocation();
+      GetUserLocation();
+    } catch (err) {
+      console.log('err', err);
+      setIsLoading(false);
+      setError(
+        'Falha ao carregar Google Maps Geocoding API. Verifique a API Key',
+      );
+    }
   }, []);
-
+  console.log(error);
   async function GetUserWeather() {
     setIsLoading(true);
-
-    const response: AxiosResponse = await api.get(
-      `weather?lat=${coords?.coords.latitude}&lon=${coords?.coords.longitude}&appid=${WEATHER_API_KEY}&lang=pt_br&units=metric`,
-    );
-
-    if (response.status === 200) {
-      setWeather(response.data.weather);
-      setWeatherData(response.data);
-
-      const address = await Geocoder.from(
-        coords?.coords.latitude,
-        coords?.coords.longitude,
+    try {
+      const response: AxiosResponse = await api.get(
+        `weather?lat=${coords?.coords.latitude}&lon=${coords?.coords.longitude}&appid=${WEATHER_API_KEY}&lang=pt_br&units=metric`,
       );
 
-      setUserAddress(address?.results[0]?.formatted_address);
+      if (response.status === 200) {
+        setWeather(response.data.weather);
+        setWeatherData(response.data);
 
-      setIsLoading(false);
+        const address = await Geocoder.from(
+          coords?.coords.latitude,
+          coords?.coords.longitude,
+        );
+
+        setUserAddress(address?.results[0]?.formatted_address);
+      }
+    } catch (err) {
+      setError('Falha ao carregar API openweather. Verifique a API Key');
     }
+
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -85,12 +96,15 @@ const App = () => {
           </TouchableOpacity>
 
           <View>
-            <WeatherCard
-              isLoading={isLoading}
-              weather={weather}
-              weatherData={weatherData}
-              userAddress={userAddress}
-            />
+            {error && <Text style={styles.error}>{error}</Text>}
+            {!error && (
+              <WeatherCard
+                isLoading={isLoading}
+                weather={weather}
+                weatherData={weatherData}
+                userAddress={userAddress}
+              />
+            )}
           </View>
         </View>
       </SafeAreaView>
@@ -118,6 +132,11 @@ const styles = StyleSheet.create({
   refreshButtonText: {
     color: '#fff',
     fontSize: 20,
+  },
+  error: {
+    fontSize: 18,
+    color: 'red',
+    alignSelf: 'center',
   },
 });
 
