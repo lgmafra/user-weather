@@ -77,11 +77,11 @@ const styles = StyleSheet.create({
   },
   weatherData: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 16,
   },
   weatherDataCity: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 5,
   },
   weatherTemp: {
