@@ -10,10 +10,13 @@ import {
 
 import './config/ReactotronConfig';
 
-import Geolocation from 'react-native-geolocation-service';
+import Geolocation, {
+  GeolocationResponse,
+  GeolocationError,
+} from '@react-native-community/geolocation';
 import Geocoder from 'react-native-geocoding';
 
-import api, {API_KEY} from './services/api';
+import api from './services/api';
 import {AxiosResponse} from 'axios';
 
 import {IWeather, IWeatherData, ICoords} from './interfaces';
@@ -21,25 +24,27 @@ import WeatherCard from './components/WeatherCard';
 import {MAP_API_KEY, WEATHER_API_KEY} from './constants';
 
 const App = () => {
-  const [error, setError] = useState<any>();
-  const [coords, setCoords] = useState<ICoords>();
+  const [error, setError] = useState<GeolocationError>();
+  const [coords, setCoords] = useState<GeolocationResponse>();
   const [weather, setWeather] = useState<IWeather[]>();
   const [weatherData, setWeatherData] = useState<IWeatherData>();
   const [userAddress, setUserAddress] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    Geocoder.init(MAP_API_KEY);
-
+  async function GetUserLocation() {
     Geolocation.getCurrentPosition(
       (info) => setCoords(info),
       (err) => setError(err),
     );
+  }
+
+  useEffect(() => {
+    Geocoder.init(MAP_API_KEY);
 
     GetUserLocation();
   }, []);
 
-  async function GetUserLocation() {
+  async function GetUserWeather() {
     setIsLoading(true);
 
     const response: AxiosResponse = await api.get(
@@ -63,7 +68,7 @@ const App = () => {
 
   useEffect(() => {
     if (coords) {
-      GetUserLocation();
+      GetUserWeather();
     }
   }, [coords]);
 

@@ -1,3 +1,5 @@
+import {GeolocationResponse} from '@react-native-community/geolocation';
+
 export interface IWeather {
   id: Number;
   main: string;
@@ -5,16 +7,8 @@ export interface IWeather {
   icon: string;
 }
 
-export interface ICoords {
-  coords: {
-    latitude: Number;
-    longitude: Number;
-    altitudeAccuracy: Number;
-  };
-}
-
 export interface IWeatherData {
-  coords: ICoords;
+  coords: GeolocationResponse;
   weather: IWeather;
   name: string;
   main: {
