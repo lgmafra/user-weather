@@ -19,7 +19,7 @@ import Geocoder from 'react-native-geocoding';
 import api from './services/api';
 import {AxiosResponse} from 'axios';
 
-import {IWeather, IWeatherData, ICoords} from './interfaces';
+import {IWeather, IWeatherData} from './interfaces';
 import WeatherCard from './components/WeatherCard';
 import {MAP_API_KEY, WEATHER_API_KEY} from './constants';
 
@@ -81,7 +81,7 @@ const App = () => {
           <TouchableOpacity
             style={styles.refreshButton}
             onPress={GetUserLocation}>
-            <Text style={styles.refreshButtonText}>Refresh</Text>
+            <Text style={styles.refreshButtonText}>Atualizar</Text>
           </TouchableOpacity>
 
           <View>

@@ -39,8 +39,9 @@ const WeatherCard: React.FC<Props> = ({
         </View>
 
         <View style={styles.weatherTemp}>
-          <Text
-            style={styles.weatherDataTemp}>{`${weatherData?.main.temp}°`}</Text>
+          <Text style={styles.weatherDataTemp}>{`${Math.round(
+            weatherData.main.temp,
+          )}°`}</Text>
         </View>
       </View>
     );
